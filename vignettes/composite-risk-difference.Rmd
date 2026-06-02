@@ -1,0 +1,44 @@
+---
+title: "Composite Risk Difference with VA-CT-TMLE"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Composite Risk Difference with VA-CT-TMLE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, setup}
+library(vacttmle)
+```
+
+This package estimates a visit-aligned continuous-time TMLE for the composite
+survival target
+
+```text
+P(T^d > tau, D^d > tau).
+```
+
+The reported risk difference is
+
+```text
+{1 - P(T^d1 > tau, D^d1 > tau)} -
+{1 - P(T^d0 > tau, D^d0 > tau)}.
+```
+
+The intercurrent event `D` is part of the composite endpoint in this package
+version. It is not a censoring process.
+
+```{r}
+dat <- simulate_va_trial(n = 500, scenario = "S1", seed = 1)
+fit <- va_ct_tmle(dat, M = 20, B = 10, max_iter = 5, seed = 2)
+fit
+```
+
+Diagnostics include component-wise EIF means and cumulative-weight summaries.
+
+```{r}
+fit$diagnostics
+```
+
+For trial data, use `as_va_data()` to adapt subject-level and person-interval
+tables, then call `validate_va_data()` before estimation.

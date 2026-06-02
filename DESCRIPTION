@@ -1,0 +1,40 @@
+Package: vacttmle
+Title: Visit-Aligned Continuous-Time TMLE for Composite Time-to-Event Endpoints
+Version: 0.0.1
+Authors@R: c(
+    person("David", "McCoy", role = c("aut", "cre"), email = "david@example.com")
+  )
+Author: David McCoy
+Maintainer: David McCoy <david@example.com>
+Description: Implements a visit-aligned continuous-time targeted minimum loss
+    estimator for scheduled-visit trials with a composite time-to-event endpoint.
+    The current package targets composite-event-free survival, P(T^d > tau,
+    D^d > tau), and the corresponding composite risk difference. Hypothetical
+    no-intercurrent-event or no-switch estimands are intentionally not exposed.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    data.table,
+    stats,
+    utils
+Suggests:
+    knitr,
+    rmarkdown,
+    survival,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Collate:
+    '00_utils.R'
+    '01_simulate_dgm.R'
+    '02_make_long_data.R'
+    '03_fit_nuisance.R'
+    '04_va_ct_tmle.R'
+    '05_va_visit_tmle.R'
+    '06_gcomp_estimators.R'
+    'api.R'
+    'zzz.R'
