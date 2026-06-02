@@ -13,6 +13,9 @@ articles:
       - trialist-testing-protocol
       - composite-risk-difference
 reference:
+  - title: Package
+    contents:
+      - vacttmle-package
   - title: Estimators
     contents:
       - va_ct_tmle
