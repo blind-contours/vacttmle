@@ -1,0 +1,12 @@
+pandoc: 3.1.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  composite-risk-difference: composite-risk-difference.html
+  convergence-diagnostics: convergence-diagnostics.html
+  trialist-quickstart: trialist-quickstart.html
+  trialist-testing-protocol: trialist-testing-protocol.html
+last_built: 2026-06-02T18:38Z
+urls:
+  reference: https://blind-contours.github.io/vacttmle/reference
+  article: https://blind-contours.github.io/vacttmle/articles

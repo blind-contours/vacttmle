@@ -1,0 +1,205 @@
+# Trialist quickstart
+
+This article is for trial analysts using `vacttmle` on scheduled-visit
+data with exact event times between visits. The first public workflow
+estimates the 12-month composite risk difference
+
+``` text
+{1 - P(T^d1 > tau, D^d1 > tau)} -
+{1 - P(T^d0 > tau, D^d0 > tau)}.
+```
+
+The intercurrent event `D` is part of the composite endpoint. It is not
+censoring in this package version.
+
+## What question is being answered?
+
+For binary treatment, `vacttmle` estimates:
+
+- composite risk by `tau` if everyone followed `A = 0`
+- composite risk by `tau` if everyone followed `A = 1`
+- risk difference, `A = 1` minus `A = 0`
+- EIF standard error and Wald confidence interval
+- component-wise EIF diagnostics and cumulative-weight diagnostics
+
+If your scientific question is hypothetical death risk had
+rescue/crossover not occurred, do not use this package version for that
+estimand. That problem treats the intercurrent event as
+censoring/adherence and needs a different estimator.
+
+## Data checklist
+
+Your analysis requires one subject table and one person-interval table.
+The person-interval table has one row per subject per scheduled visit
+interval while the subject remains composite-event-free at the interval
+start.
+
+Required subject-level columns:
+
+| Column            | Requirement                                                 |
+|-------------------|-------------------------------------------------------------|
+| `id`              | Unique participant id                                       |
+| `W1`, `W2`        | Baseline covariates in the current interface                |
+| `A0`              | Baseline treatment coded `0` or `1`                         |
+| `T_time`          | Failure/event time; `Inf` if not observed before `tau`      |
+| `D_time`          | Intercurrent-event time; `Inf` if not observed before `tau` |
+| `composite_time`  | `pmin(T_time, D_time, tau)`                                 |
+| `composite_event` | `1` if `T` or `D` occurs by `tau`, otherwise `0`            |
+
+Required person-interval columns:
+
+| Column                    | Requirement                                        |
+|---------------------------|----------------------------------------------------|
+| `id`, `k`                 | Participant id and interval index, starting at `0` |
+| `t_start`, `t_end`, `ell` | Interval start, stop, and length                   |
+| `W1`, `W2`, `A0`, `A_k`   | Baseline covariates and interval treatment         |
+| `L_k`, `L_next`           | Visit covariate at interval start and next visit   |
+| `time_at_risk`            | Observed at-risk time inside the interval          |
+| `event_T`, `event_D`      | Cause-specific interval event indicators           |
+| `event_comp`              | Must equal `event_T OR event_D`                    |
+| `event_time`              | Elapsed event time within the interval, or `NA`    |
+| `Y_end`                   | `1` if composite-event-free at the next visit      |
+
+For a baseline-randomized trial with deterministic continuation, the
+baseline probability `g0 = 0.5` is enough. For stochastic post-baseline
+treatment or management deviations, include known cumulative
+treatment-history probability columns in the interval table:
+`follow_d0`, `follow_d1`, `g_cum_observed`, `g_cum_d0`, and `g_cum_d1`.
+
+Before fitting, run:
+
+``` r
+library(data.table)
+
+obs <- as_va_data(
+  subject_data = subject_data,
+  interval_data = interval_data,
+  visit_times = c(0, 1, 3, 6, 12),
+  tau = 12
+)
+
+validate_va_data(obs)
+```
+
+## Smoke test
+
+Before using your own data, run the installed smoke test:
+
+``` r
+source(system.file("examples", "trialist-smoke-test.R", package = "vacttmle"))
+```
+
+The smoke test runs toy validation checks, fits VA-CT-TMLE on simulated
+scheduled-visit data, prints the estimate, and prints diagnostics.
+
+## First analysis
+
+Start with the proposed estimator and modest Monte Carlo integration.
+Increase `M` later for a final report.
+
+``` r
+fit <- va_ct_tmle(
+  obs,
+  d0 = 0,
+  d1 = 1,
+  tau = 12,
+  g0 = 0.5,
+  M = 100,
+  B = 10,
+  max_iter = 10,
+  seed = 2026
+)
+
+fit
+fit$result
+fit$diagnostics
+```
+
+Example output from the package smoke-test DGM:
+
+``` text
+Visit-aligned continuous-time estimator
+Endpoint: composite
+Estimator: ct_tmle
+Risk(d0): 0.2875
+Risk(d1): 0.1556
+Risk difference: -0.1319
+SE: 0.0347
+95% CI: [-0.1999, -0.0638]
+Converged: yes
+```
+
+Important result columns:
+
+| Column                                            | Meaning                                                    |
+|---------------------------------------------------|------------------------------------------------------------|
+| `risk_d0`, `risk_d1`                              | Composite risk under sustained control and treatment       |
+| `risk_difference`                                 | `risk_d1 - risk_d0`                                        |
+| `se`                                              | EIF standard error for the risk difference                 |
+| `ci_lower`, `ci_upper`                            | Wald confidence interval                                   |
+| `converged`                                       | Whether all targeted EIF components pass the stopping rule |
+| `max_abs_eif_T`, `max_abs_eif_D`, `max_abs_eif_Q` | Component-wise EIF means                                   |
+| `max_weight_d0`, `max_weight_d1`                  | Cumulative treatment-history weight maxima                 |
+| `ess_d0`, `ess_d1`                                | Effective sample size implied by weights                   |
+
+## Compare with familiar analyses
+
+Use standard trial summaries as context, not as substitutes for the
+marginal composite risk difference.
+
+``` r
+# Composite event counts by arm
+obs$subject[, .N, by = .(A0, composite_event)]
+
+# Unadjusted composite risk by randomized arm
+obs$subject[, .(risk = mean(composite_event)), by = A0]
+
+# A simple descriptive Cox model for the composite endpoint
+survival::coxph(
+  survival::Surv(composite_time, composite_event) ~ A0 + W1 + W2,
+  data = obs$subject
+)
+```
+
+Useful comparison questions:
+
+- Are composite-event counts plausible by treatment arm?
+- Are adjusted risks close to unadjusted summaries in a balanced
+  randomized trial?
+- Do VA-CT-TMLE and VA-CT-GCOMP point estimates differ materially?
+- Are cumulative weights stable enough for the sustained-regime
+  contrast?
+- Did targeting reduce the component-wise EIF means?
+
+## Ablation estimators
+
+Run these as diagnostics:
+
+``` r
+fit_gcomp <- va_ct_gcomp(obs, M = 100, seed = 2027)
+fit_visit <- va_visit_tmle(obs, M = 100, B = 10, max_iter = 10, seed = 2028)
+
+fit_gcomp$result
+fit_visit$result
+```
+
+[`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+isolates targeting.
+[`va_visit_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+isolates the added value of continuous-time hazard targeting.
+
+## What to report
+
+For a first trial report, include:
+
+- package version from `packageVersion("vacttmle")`
+- visit grid and target horizon
+- endpoint definition, explicitly stating that `D` is part of the
+  composite
+- treatment regimes compared
+- composite-event counts by arm
+- point estimate, SE, and confidence interval
+- `fit$diagnostics`
+- whether post-baseline treatment probabilities were deterministic or
+  known stochastic probabilities
+- any non-convergence or extreme weights

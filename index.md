@@ -1,0 +1,186 @@
+# vacttmle
+
+[![R-CMD-check](https://github.com/blind-contours/vacttmle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/blind-contours/vacttmle/actions/workflows/R-CMD-check.yaml)
+
+`vacttmle` is a standalone R package for visit-aligned continuous-time
+TMLE in scheduled-visit trials with a composite time-to-event endpoint.
+
+The current package targets
+
+``` text
+P(T^d > tau, D^d > tau)
+```
+
+and the composite risk difference
+
+``` text
+{1 - P(T^d1 > tau, D^d1 > tau)} -
+{1 - P(T^d0 > tau, D^d0 > tau)}.
+```
+
+`D` is part of the composite endpoint. It is not treated as censoring in
+this package version.
+
+## Installation
+
+Install the development version from GitHub:
+
+``` r
+install.packages("remotes")
+remotes::install_github("blind-contours/vacttmle")
+```
+
+## Start here for trial analyses
+
+If you are testing `vacttmle` on a scheduled-visit trial, start with:
+
+- [`vignette("trialist-quickstart", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/trialist-quickstart.md):
+  data layout, first fit, output interpretation, and standard comparison
+  checks.
+- [`vignette("convergence-diagnostics", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/convergence-diagnostics.md):
+  how to inspect component-wise EIF diagnostics, weights, and
+  convergence.
+- [`vignette("trialist-testing-protocol", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/trialist-testing-protocol.md):
+  a short conservative-to-flexible testing path and current limitations.
+
+Before using your own data, run the installed smoke test:
+
+``` r
+library(vacttmle)
+source(system.file("examples", "trialist-smoke-test.R", package = "vacttmle"))
+```
+
+The smoke test prints a deterministic example analysis and verifies that
+the package, toy checks, estimator, and diagnostics are working.
+
+## Data layout
+
+The current package expects one subject table and one person-interval
+table. Visits are scheduled, for example months `0, 1, 3, 6, 12`.
+
+Required subject-level columns:
+
+| Column            | Meaning                                                     |
+|-------------------|-------------------------------------------------------------|
+| `id`              | Unique participant id                                       |
+| `W1`, `W2`        | Baseline covariates in the current package interface        |
+| `A0`              | Baseline treatment, coded `0` or `1`                        |
+| `T_time`          | Failure/event time; use `Inf` if no event before `tau`      |
+| `D_time`          | Intercurrent-event time; use `Inf` if no event before `tau` |
+| `composite_time`  | `pmin(T_time, D_time, tau)`                                 |
+| `composite_event` | `1` if `T` or `D` occurs by `tau`, otherwise `0`            |
+
+Required person-interval columns:
+
+| Column                    | Meaning                                                 |
+|---------------------------|---------------------------------------------------------|
+| `id`, `k`                 | Participant id and interval index, starting at `k = 0`  |
+| `t_start`, `t_end`, `ell` | Interval start, stop, and length                        |
+| `W1`, `W2`, `A0`, `A_k`   | Baseline covariates and interval treatment              |
+| `L_k`, `L_next`           | Visit covariate at interval start and next visit        |
+| `time_at_risk`            | Observed at-risk time inside the interval               |
+| `event_T`, `event_D`      | Cause-specific interval indicators                      |
+| `event_comp`              | `event_T OR event_D`                                    |
+| `event_time`              | Elapsed event time within interval, or `NA` if no event |
+| `Y_end`                   | `1` if composite-event-free at the next visit           |
+
+For baseline-randomized trials with deterministic post-baseline
+continuation, the default `g0 = 0.5` and no additional visit-level
+treatment probabilities are needed. For stochastic post-baseline
+treatment/deviation processes, include `follow_d0`, `follow_d1`,
+`g_cum_observed`, `g_cum_d0`, and `g_cum_d1` in the person-interval
+table so cumulative treatment-history weights are known.
+
+## Minimal example with output
+
+``` r
+library(vacttmle)
+
+dat <- simulate_va_trial(n = 500, scenario = "S1", seed = 1)
+
+fit <- va_ct_tmle(dat, M = 20, B = 10, max_iter = 5, seed = 2)
+fit
+```
+
+Expected output:
+
+``` text
+Visit-aligned continuous-time estimator
+Endpoint: composite
+Estimator: ct_tmle
+Risk(d0): 0.2875
+Risk(d1): 0.1556
+Risk difference: -0.1319
+SE: 0.0347
+95% CI: [-0.1999, -0.0638]
+Converged: yes
+```
+
+Inspect diagnostics:
+
+``` r
+fit$diagnostics
+```
+
+Example diagnostics:
+
+| converged | n_outer_iterations | max_abs_eif_T | max_abs_eif_D | max_abs_eif_Q | max_abs_total_eif | max_weight_d0 | max_weight_d1 | ess_d0 | ess_d1 |
+|-----------|-------------------:|--------------:|--------------:|--------------:|------------------:|--------------:|--------------:|-------:|-------:|
+| TRUE      |                  1 |      0.000370 |      0.000424 |      0.001349 |          0.001094 |             2 |             2 |    952 |    971 |
+
+## Public functions
+
+- [`va_ct_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+  estimates the composite risk difference with VA-CT-TMLE.
+- [`va_visit_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+  runs the visit-node-only ablation.
+- [`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+  runs visit-aligned continuous-time g-computation without targeting.
+- [`as_va_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_data.md)
+  adapts subject and person-interval tables to the package format.
+- [`validate_va_data()`](https://blind-contours.github.io/vacttmle/reference/validate_va_data.md)
+  checks endpoint coding and required fields.
+- [`simulate_va_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_trial.md)
+  generates example scheduled-visit trial data.
+- [`run_vacttmle_toy_checks()`](https://blind-contours.github.io/vacttmle/reference/run_vacttmle_toy_checks.md)
+  runs lightweight analytic checks.
+
+## Toy validation
+
+``` r
+run_vacttmle_toy_checks(n = 3000, seed = 7001)
+```
+
+Expected output:
+
+| check             | estimate |    truth | abs_error | passed |
+|-------------------|---------:|---------:|----------:|:------:|
+| one_interval      | 0.618935 | 0.618783 |  0.000152 |  TRUE  |
+| two_interval      | 0.682722 | 0.697676 |  0.014954 |  TRUE  |
+| composite_hazards | 0.485428 | 0.486752 |  0.001324 |  TRUE  |
+
+## Current scope
+
+Supported now:
+
+- scheduled-visit data with exact event timing inside intervals
+- composite endpoint where `D` is part of the endpoint
+- binary static regimes `d0 = 0` and `d1 = 1`
+- baseline-randomized trials with deterministic continuation
+- known stochastic visit-level treatment probabilities when supplied in
+  the person-interval table
+- risk, risk difference, EIF standard error, Wald CI, convergence
+  diagnostics, and weight diagnostics
+
+Not currently supported:
+
+- hypothetical no-switch/no-intercurrent-event estimands
+- treating `D` as censoring
+- arbitrary dynamic regimes
+- multi-arm or continuous treatment
+- recurrent events
+- informative censoring before `tau`
+- clustered-trial variance corrections
+
+Hypothetical no-switch/no-intercurrent-event estimands require a
+different estimator and are intentionally not exposed here.

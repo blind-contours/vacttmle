@@ -1,0 +1,144 @@
+# Testing protocol and current limitations
+
+This article gives a short protocol for testing `vacttmle` on trial
+data.
+
+## Step 1: Install and run smoke tests
+
+``` r
+install.packages("remotes")
+remotes::install_github("blind-contours/vacttmle")
+```
+
+``` r
+library(vacttmle)
+source(system.file("examples", "trialist-smoke-test.R", package = "vacttmle"))
+```
+
+The smoke test should print:
+
+- toy validation rows with `passed = TRUE`
+- a VA-CT-TMLE fit with bounded risks and finite standard error
+- diagnostics with `converged = TRUE`
+- maximum weights of `2` in the baseline-randomized example
+
+## Step 2: Validate your data
+
+Construct a `va_data` object:
+
+``` r
+library(data.table)
+
+obs <- as_va_data(
+  subject_data = subject_data,
+  interval_data = interval_data,
+  visit_times = c(0, 1, 3, 6, 12),
+  tau = 12
+)
+```
+
+Then confirm:
+
+``` r
+validate_va_data(obs)
+obs$subject[, .N, by = .(A0, composite_event)]
+obs$person_interval[, .N, by = .(k, event_comp)]
+```
+
+## Step 3: Run the conservative estimator ladder
+
+Start with g-computation:
+
+``` r
+fit_gcomp <- va_ct_gcomp(obs, M = 100, seed = 1)
+fit_gcomp
+```
+
+Then run the proposed estimator:
+
+``` r
+fit_tmle <- va_ct_tmle(
+  obs,
+  M = 100,
+  B = 10,
+  max_iter = 10,
+  update_method = "adaptive",
+  seed = 2
+)
+
+fit_tmle
+fit_tmle$diagnostics
+```
+
+Then run the visit-node ablation:
+
+``` r
+fit_visit <- va_visit_tmle(obs, M = 100, B = 10, max_iter = 10, seed = 3)
+fit_visit
+```
+
+## Step 4: Compare against standard trial summaries
+
+``` r
+obs$subject[, .(risk = mean(composite_event), n = .N), by = A0]
+
+survival::survfit(
+  survival::Surv(composite_time, composite_event) ~ A0,
+  data = obs$subject
+)
+```
+
+The Kaplan-Meier or Cox summaries are context checks. They do not
+generally equal the visit-aligned TMLE estimand when post-baseline
+covariates and treatment-history weights matter.
+
+## Step 5: Decide whether the analysis is reportable
+
+A first analysis is ready to share when:
+
+- data validation passes
+- endpoint coding matches the scientific question
+- all estimates are finite and risks are in `[0, 1]`
+- component-wise EIF diagnostics are small or clearly explained
+- cumulative weights and ESS are acceptable
+- ablation estimates do not reveal an obvious implementation problem
+
+## Current limitations
+
+Supported:
+
+- scheduled visits
+- exact event timing inside intervals
+- composite endpoint `T or D`
+- binary treatment regimes `A = 0` versus `A = 1`
+- baseline randomized treatment with deterministic continuation
+- known stochastic visit-level treatment probabilities when supplied
+- component-wise EIF and weight diagnostics
+
+Not supported:
+
+- hypothetical no-switch/no-D estimands
+- treating `D` as censoring
+- arbitrary dynamic regimes
+- multi-arm or continuous treatment
+- recurrent events
+- left truncation or delayed entry
+- informative censoring before `tau`
+- clustered or stratified trial variance estimators
+- full Super Learner nuisance libraries
+
+## What to include in an issue
+
+When opening a GitHub issue, include:
+
+- `packageVersion("vacttmle")`
+- [`sessionInfo()`](https://rdrr.io/r/utils/sessionInfo.html)
+- visit grid and `tau`
+- endpoint definition
+- event counts by arm
+- the exact call to
+  [`as_va_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_data.md)
+- the exact estimator call
+- `fit$result`
+- `fit$diagnostics`
+- whether the smoke test passed locally
