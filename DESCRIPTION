@@ -11,6 +11,8 @@ Description: Implements a visit-aligned continuous-time targeted minimum loss
     The current package targets composite-event-free survival, P(T^d > tau,
     D^d > tau), and the corresponding composite risk difference. Hypothetical
     no-intercurrent-event or no-switch estimands are intentionally not exposed.
+URL: https://github.com/blind-contours/vacttmle
+BugReports: https://github.com/blind-contours/vacttmle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -23,6 +25,7 @@ Imports:
     utils
 Suggests:
     knitr,
+    pkgdown,
     rmarkdown,
     survival,
     testthat (>= 3.0.0)

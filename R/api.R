@@ -9,7 +9,8 @@ required_subject_cols <- function() {
 
 required_interval_cols <- function() {
   c("id", "k", "t_start", "t_end", "ell", "W1", "W2", "A0", "A_k",
-    "L_k", "time_at_risk", "event_T", "event_D", "event_comp", "Y_end")
+    "L_k", "L_next", "time_at_risk", "event_T", "event_D", "event_comp",
+    "event_time", "Y_end")
 }
 
 stop_missing_cols <- function(x, cols, name) {
@@ -29,7 +30,8 @@ stop_missing_cols <- function(x, cols, name) {
 #'   `A0`, `T_time`, `D_time`, `composite_time`, and `composite_event`.
 #' @param interval_data Person-interval data. Required columns are `id`, `k`,
 #'   `t_start`, `t_end`, `ell`, `W1`, `W2`, `A0`, `A_k`, `L_k`,
-#'   `time_at_risk`, `event_T`, `event_D`, `event_comp`, and `Y_end`.
+#'   `L_next`, `time_at_risk`, `event_T`, `event_D`, `event_comp`,
+#'   `event_time`, and `Y_end`.
 #' @param visit_times Numeric vector of scheduled visit times.
 #' @param tau Analysis horizon.
 #' @param visit_L Optional subject-by-visit matrix of visit covariates.
@@ -117,6 +119,9 @@ validate_va_data <- function(obs_data, endpoint = "composite") {
   if (anyDuplicated(subject$id)) stop("subject ids must be unique.", call. = FALSE)
   if (any(interval$time_at_risk < -1e-12, na.rm = TRUE)) {
     stop("time_at_risk must be non-negative.", call. = FALSE)
+  }
+  if (any(interval$time_at_risk - interval$ell > 1e-10, na.rm = TRUE)) {
+    stop("time_at_risk must not exceed ell.", call. = FALSE)
   }
   if (any(interval$event_T == 1L & interval$event_D == 1L, na.rm = TRUE)) {
     stop("event_T and event_D cannot both equal 1 in the same interval.", call. = FALSE)

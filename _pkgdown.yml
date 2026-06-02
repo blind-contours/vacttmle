@@ -1,0 +1,28 @@
+url: https://blind-contours.github.io/vacttmle/
+template:
+  bootstrap: 5
+navbar:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [github]
+articles:
+  - title: Trialist workflow
+    contents:
+      - trialist-quickstart
+      - convergence-diagnostics
+      - trialist-testing-protocol
+      - composite-risk-difference
+reference:
+  - title: Estimators
+    contents:
+      - va_ct_tmle
+      - va_visit_tmle
+      - va_ct_gcomp
+  - title: Data preparation
+    contents:
+      - as_va_data
+      - validate_va_data
+  - title: Examples and checks
+    contents:
+      - simulate_va_trial
+      - run_vacttmle_toy_checks

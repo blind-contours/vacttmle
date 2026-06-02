@@ -1,0 +1,40 @@
+name: Convergence issue
+description: Report a non-converged VA-CT-TMLE fit or unstable diagnostics.
+title: "[Convergence]: "
+labels: ["convergence", "diagnostics"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What failed or looked unstable?
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Analysis setup
+      description: Include package version, visit grid, tau, endpoint definition, and estimator call.
+      value: |
+        packageVersion("vacttmle"):
+        visit_times:
+        tau:
+        estimator call:
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Paste fit$diagnostics and relevant event counts.
+    validations:
+      required: true
+  - type: textarea
+    id: smoke
+    attributes:
+      label: Smoke test
+      description: Did the installed smoke test pass?
+      value: |
+        source(system.file("examples", "trialist-smoke-test.R", package = "vacttmle"))
+    validations:
+      required: true

@@ -1,6 +1,6 @@
-^\\.git$
-^\\.github$
-^.*\\.Rproj$
-^\\.Rproj\\.user$
-^README\\.Rmd$
-^cran-comments\\.md$
+^\.git$
+^\.github$
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^cran-comments\.md$

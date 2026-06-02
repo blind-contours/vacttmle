@@ -1,0 +1,29 @@
+name: Data validation issue
+description: Report problems creating or validating a va_data object.
+title: "[Data validation]: "
+labels: ["data", "validation"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What validation error or data-layout problem did you hit?
+    validations:
+      required: true
+  - type: textarea
+    id: columns
+    attributes:
+      label: Columns
+      description: Paste names(subject_data) and names(interval_data).
+      value: |
+        names(subject_data):
+        names(interval_data):
+    validations:
+      required: true
+  - type: textarea
+    id: call
+    attributes:
+      label: as_va_data call
+      description: Paste the exact call, redacting sensitive data if needed.
+    validations:
+      required: true

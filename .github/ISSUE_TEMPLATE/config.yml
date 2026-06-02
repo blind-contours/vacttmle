@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Estimand question
+    url: https://github.com/blind-contours/vacttmle/issues/new?template=estimand_question.yml
+    about: Ask whether your trial question matches the composite endpoint target.

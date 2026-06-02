@@ -1,0 +1,27 @@
+name: Estimand question
+description: Ask whether your scientific question matches the current package target.
+title: "[Estimand]: "
+labels: ["estimand"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Scientific question
+      description: Describe the treatment strategies and endpoint.
+    validations:
+      required: true
+  - type: dropdown
+    id: d_role
+    attributes:
+      label: What is D in your trial?
+      options:
+        - Part of the clinical composite endpoint
+        - Censoring/adherence/intercurrent event to eliminate hypothetically
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Include visit schedule, tau, and treatment/deviation process.
