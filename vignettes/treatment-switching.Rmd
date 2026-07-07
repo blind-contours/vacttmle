@@ -1,0 +1,101 @@
+---
+title: "ITT and per-protocol estimands under treatment switching"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ITT and per-protocol estimands under treatment switching}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+```{r setup}
+library(vacttmle)
+```
+
+## The problem
+
+In many randomized trials the treatment assigned at baseline is not the
+treatment received throughout follow-up: control-arm patients cross over to the
+experimental treatment, patients switch off toxic regimens, and others are lost
+to follow-up. These events happen in continuous time and are recorded to the
+day, while the covariates that drive them (disease status, biomarkers) are
+measured only at scheduled visits.
+
+Two estimands answer different questions, both mapped to ICH E9(R1) strategies:
+
+- **Treatment-policy (ITT):** contrast the randomized arms leaving switching as
+  it naturally occurs (censoring removed).
+- **Hypothetical no-switching (per-protocol, PP):** contrast "assigned to arm
+  *a* and never switch" (switching and censoring removed).
+
+`vacttmle` estimates both from the exact switch and dropout dates, adjusting for
+the visit-measured time-varying confounders that drive switching and dropout.
+
+## A simulated trial
+
+```{r}
+dat <- simulate_va_switch_trial(n = 1000, scenario = "A2", seed = 1)
+```
+
+Scenario `"A2"` has crossover driven by the visit covariate and no dropout;
+`"A1"` adds informative censoring, `"A7"` is a heavy-switching oncology-style
+co-occurrence scenario.
+
+## Estimating both estimands
+
+```{r}
+pp  <- va_ct_switch(dat, estimand = "PP",  seed = 1)
+itt <- va_ct_switch(dat, estimand = "ITT", seed = 1)
+
+pp
+itt
+```
+
+The per-protocol effect is typically larger than the intention-to-treat effect:
+removing switching un-dilutes the contrast, since control-arm crossover to the
+more effective regimen narrows the observed ITT gap.
+
+```{r}
+c(ITT = itt$risk_difference, PP = pp$risk_difference)
+```
+
+Inference is influence-function based:
+
+```{r}
+pp$ci
+pp$diagnostics
+```
+
+## Your own data
+
+Supply one row per subject with exact times (`Inf` where an event never
+happens) and a subject-by-visit covariate matrix:
+
+```{r, eval = FALSE}
+dat <- as_va_switch_data(
+  subject_data = my_subjects,  # id, A0, W1, W2, T_time, R_time, C_time
+  visit_L      = my_visit_L,   # n x length(visit_times)
+  visit_times  = c(0, 1, 3, 6, 12),
+  tau          = 12
+)
+va_ct_switch(dat, estimand = "PP")
+```
+
+## Heavy switching and positivity
+
+When switching is frequent and strongly covariate-driven, the cumulative
+inverse-probability weight can grow large. Percentile truncation on the
+correctly specified mechanism controls it while retaining the covariate
+dependence:
+
+```{r}
+heavy <- simulate_va_switch_trial(n = 1000, scenario = "A7", seed = 2)
+va_ct_switch(heavy, estimand = "PP", weight_trunc = "p95", seed = 2)
+```
+
+The per-visit weight maxima and effective sample sizes are in
+`fit$diagnostics`, supporting the positivity checks that switching-adjustment
+guidance recommends.

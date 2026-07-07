@@ -42,6 +42,3 @@ fit$diagnostics
 
 For trial data, use `as_va_data()` to adapt subject-level and person-interval
 tables, then call `validate_va_data()` before estimation.
-
-See `vignette("trialist-quickstart", package = "vacttmle")` for the full
-trialist workflow and data-layout checklist.

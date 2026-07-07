@@ -1,18 +1,22 @@
 Package: vacttmle
-Title: Visit-Aligned Continuous-Time TMLE for Composite Time-to-Event Endpoints
-Version: 0.0.1
+Title: Visit-Aligned Continuous-Time TMLE for Trials with Treatment Switching and Censoring
+Version: 0.1.0
 Authors@R: c(
-    person("David", "McCoy", role = c("aut", "cre"), email = "david@example.com")
+    person("David", "McCoy", role = c("aut", "cre"),
+           email = "david_mccoy@berkeley.edu")
   )
 Author: David McCoy
-Maintainer: David McCoy <david@example.com>
-Description: Implements a visit-aligned continuous-time targeted minimum loss
-    estimator for scheduled-visit trials with a composite time-to-event endpoint.
-    The current package targets composite-event-free survival, P(T^d > tau,
-    D^d > tau), and the corresponding composite risk difference. Hypothetical
-    no-intercurrent-event or no-switch estimands are intentionally not exposed.
-URL: https://blind-contours.github.io/vacttmle, https://github.com/blind-contours/vacttmle
-BugReports: https://github.com/blind-contours/vacttmle/issues
+Maintainer: David McCoy <david_mccoy@berkeley.edu>
+Description: Visit-aligned continuous-time targeted minimum loss estimation
+    (VA-CT-TMLE) for scheduled-visit randomized trials in which treatment
+    switching (crossover) and loss to follow-up occur in continuous time while
+    covariates are recorded only at scheduled visits. The package estimates
+    failure-free survival and risk differences under the ICH E9(R1)
+    treatment-policy (intention-to-treat) and hypothetical no-switching
+    (per-protocol) strategies from exact switch and dropout dates, with
+    influence-function inference, positivity diagnostics, and percentile
+    weight control. A composite-endpoint estimator is also provided. Methods
+    are described in McCoy (2026).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -22,12 +26,11 @@ Depends:
 Imports:
     data.table,
     stats,
+    survival,
     utils
 Suggests:
     knitr,
-    pkgdown,
     rmarkdown,
-    survival,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
@@ -39,5 +42,14 @@ Collate:
     '04_va_ct_tmle.R'
     '05_va_visit_tmle.R'
     '06_gcomp_estimators.R'
+    'switch_dgm.R'
+    'switch_nuisance.R'
+    'switch_weights.R'
+    'switch_eif.R'
+    'switch_target.R'
+    'switch_ctmle.R'
+    'switch_estimators.R'
+    'switch_comparators.R'
     'api.R'
+    'api_switch.R'
     'zzz.R'
