@@ -2,7 +2,7 @@
 % Please edit documentation in R/switch_comparators.R
 \name{est_discrete_ltmle}
 \alias{est_discrete_ltmle}
-\title{Discrete-LTMLE PP/ITT contrast under a fixed ordering convention and grid.}
+\title{Discrete-time LTMLE contrast under a fixed grid and ordering convention}
 \usage{
 est_discrete_ltmle(
   obs_data,
@@ -19,6 +19,39 @@ est_discrete_ltmle(
   replicate_id = NA_integer_
 )
 }
+\arguments{
+\item{obs_data}{A \code{va_switch_data} object (continuous-time).}
+
+\item{estimand}{\code{"ITT"} or \code{"PP"}.}
+
+\item{tau}{Analysis horizon.}
+
+\item{g0}{Known randomization probability of arm 1.}
+
+\item{delta}{Bin width passed to \code{\link[=snap_to_grid]{snap_to_grid()}}.}
+
+\item{ordering}{Within-bin ordering convention passed to \code{\link[=snap_to_grid]{snap_to_grid()}}.}
+
+\item{M}{Monte Carlo draws for visit-level integration.}
+
+\item{B}{Sub-bins (kept at 1 for a genuine discrete-time fit).}
+
+\item{seed}{Random seed.}
+
+\item{true_rd}{Optional true risk difference, carried into the result.}
+
+\item{scenario, replicate_id}{Optional bookkeeping labels.}
+}
+\value{
+A one-row \code{data.table} with the estimate, SE, CI, and metadata.
+}
 \description{
-Discrete-LTMLE PP/ITT contrast under a fixed ordering convention and grid.
+Runs a genuine discrete-time ICE-LTMLE on the output of \code{\link[=snap_to_grid]{snap_to_grid()}}:
+event/switch/censoring times live on the bin boundaries, so this is the
+estimator a discrete-time analyst would compute, including its dependence on
+the arbitrary within-bin ordering convention. Used to reproduce the
+ordering-sensitivity experiment of the accompanying paper.
+}
+\seealso{
+\code{\link[=snap_to_grid]{snap_to_grid()}}, \code{\link[=va_ct_switch]{va_ct_switch()}}
 }

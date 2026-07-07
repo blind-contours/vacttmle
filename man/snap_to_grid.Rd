@@ -2,7 +2,7 @@
 % Please edit documentation in R/switch_comparators.R
 \name{snap_to_grid}
 \alias{snap_to_grid}
-\title{Build a snapped, discretized obs_data under a given ordering convention.}
+\title{Snap a continuous-time trial to a discrete grid under an ordering convention}
 \usage{
 snap_to_grid(
   obs_data,
@@ -12,14 +12,27 @@ snap_to_grid(
 )
 }
 \arguments{
-\item{obs_data}{original continuous-time obs_data (subject + person_interval)}
+\item{obs_data}{A \code{va_switch_data} object (continuous-time; see
+\code{\link[=as_va_switch_data]{as_va_switch_data()}}).}
 
-\item{delta}{bin width (months)}
+\item{delta}{Bin width, on the time scale of the data.}
 
-\item{ordering}{"event_first" | "switch_first" | "drop_first"}
+\item{ordering}{Within-bin ordering convention: \code{"switch_first"} (switch
+resolved before the outcome; a same-bin death is censored at switch),
+\code{"event_first"} (the death is adjudicated first and counted), or
+\code{"drop_first"} (dropout resolved before the outcome).}
 
-\item{tau}{horizon}
+\item{tau}{Analysis horizon.}
+}
+\value{
+A discretized \code{va_switch_data}-style object on the \code{delta} grid.
 }
 \description{
-Build a snapped, discretized obs_data under a given ordering convention.
+Converts a \code{va_switch_data} object to the discretized data a discrete-time
+LTMLE analyst would construct: every failure/switch/censoring time is snapped
+to its bin boundary, and same-bin co-occurrences are resolved by the chosen
+within-interval ordering convention.
+}
+\seealso{
+\code{\link[=est_discrete_ltmle]{est_discrete_ltmle()}}
 }

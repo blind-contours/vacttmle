@@ -96,6 +96,29 @@ va_ct_switch(dat, estimand = "PP", weight_trunc = "p95")
 - Piecewise-exponential working models; plug in flexible learners for
   nonparametric efficiency.
 
+## Help stress-test this package
+
+This is a 0.1.0 release and we want it kicked hard. Especially useful:
+
+1. **Feed it your trial's shape.** Map your data through `as_va_switch_data()`
+   — unusual visit grids, heavy or one-sided switching, high censoring, small
+   n. If a data quirk produces a crash or a cryptic error instead of a clear
+   message, that's a bug: please open an issue.
+2. **Probe the positivity machinery.** Simulate or supply data with
+   near-deterministic switching and compare `va_ct_switch()` with and without
+   `weight_trunc = "p95"`; check the per-visit weight diagnostics behave.
+3. **Race it against what you use now.** `est_discrete_ltmle()` +
+   `snap_to_grid()` let you reproduce a discrete-time analysis on the same
+   data under different grid widths and within-interval ordering conventions;
+   `simulate_va_switch_trial()` scenarios A0–A7 have known truths for
+   benchmarking.
+4. **Break the assumptions on purpose.** Visit-sufficiency violations
+   (scenario A6-style latent drivers), effects that depend on switch timing,
+   competing risks — tell us where it degrades gracefully vs. misleads.
+
+Use the issue templates (convergence, data validation, estimand questions) and
+include `run_vacttmle_toy_checks()` output plus your `sessionInfo()`.
+
 ## Citation
 
 McCoy, D. (2026). *Doubly robust, exact-time adjustment for treatment switching

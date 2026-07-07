@@ -37,12 +37,24 @@
   pmin(ceiling(t / delta - 1e-9) * delta, tau)
 }
 
-#' Build a snapped, discretized obs_data under a given ordering convention.
+#' Snap a continuous-time trial to a discrete grid under an ordering convention
 #'
-#' @param obs_data  original continuous-time obs_data (subject + person_interval)
-#' @param delta     bin width (months)
-#' @param ordering  "event_first" | "switch_first" | "drop_first"
-#' @param tau       horizon
+#' Converts a `va_switch_data` object to the discretized data a discrete-time
+#' LTMLE analyst would construct: every failure/switch/censoring time is snapped
+#' to its bin boundary, and same-bin co-occurrences are resolved by the chosen
+#' within-interval ordering convention.
+#'
+#' @param obs_data A `va_switch_data` object (continuous-time; see
+#'   [as_va_switch_data()]).
+#' @param delta Bin width, on the time scale of the data.
+#' @param ordering Within-bin ordering convention: `"switch_first"` (switch
+#'   resolved before the outcome; a same-bin death is censored at switch),
+#'   `"event_first"` (the death is adjudicated first and counted), or
+#'   `"drop_first"` (dropout resolved before the outcome).
+#' @param tau Analysis horizon.
+#'
+#' @return A discretized `va_switch_data`-style object on the `delta` grid.
+#' @seealso [est_discrete_ltmle()]
 snap_to_grid <- function(obs_data, delta, ordering = c("switch_first",
                                                        "event_first", "drop_first"),
                          tau = obs_data$tau) {
@@ -125,7 +137,28 @@ snap_to_grid <- function(obs_data, delta, ordering = c("switch_first",
        visit_times = edges, tau = tau, params = obs_data$params)
 }
 
-#' Discrete-LTMLE PP/ITT contrast under a fixed ordering convention and grid.
+#' Discrete-time LTMLE contrast under a fixed grid and ordering convention
+#'
+#' Runs a genuine discrete-time ICE-LTMLE on the output of [snap_to_grid()]:
+#' event/switch/censoring times live on the bin boundaries, so this is the
+#' estimator a discrete-time analyst would compute, including its dependence on
+#' the arbitrary within-bin ordering convention. Used to reproduce the
+#' ordering-sensitivity experiment of the accompanying paper.
+#'
+#' @param obs_data A `va_switch_data` object (continuous-time).
+#' @param estimand `"ITT"` or `"PP"`.
+#' @param tau Analysis horizon.
+#' @param g0 Known randomization probability of arm 1.
+#' @param delta Bin width passed to [snap_to_grid()].
+#' @param ordering Within-bin ordering convention passed to [snap_to_grid()].
+#' @param M Monte Carlo draws for visit-level integration.
+#' @param B Sub-bins (kept at 1 for a genuine discrete-time fit).
+#' @param seed Random seed.
+#' @param true_rd Optional true risk difference, carried into the result.
+#' @param scenario,replicate_id Optional bookkeeping labels.
+#'
+#' @return A one-row `data.table` with the estimate, SE, CI, and metadata.
+#' @seealso [snap_to_grid()], [va_ct_switch()]
 est_discrete_ltmle <- function(obs_data, estimand = "PP", tau = obs_data$tau,
                                g0 = 0.5, delta = 1, ordering = "switch_first",
                                M = 50, B = 1, seed = NULL, true_rd = NA_real_,

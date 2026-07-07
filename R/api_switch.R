@@ -42,24 +42,83 @@ required_switch_subject_cols <- function() {
 #' @export
 as_va_switch_data <- function(subject_data, visit_L, visit_times,
                               tau = max(visit_times)) {
-  s <- as.data.frame(subject_data)
+  s <- as.data.frame(subject_data)   # accepts data.frame, tibble, data.table
   stop_missing_cols(as.data.table(s), required_switch_subject_cols(),
                     "subject_data")
+
+  ## ---- subject-level validation with actionable messages -------------------
+  if (anyDuplicated(s$id)) {
+    stop("subject_data$id contains duplicates; supply one row per subject.",
+         call. = FALSE)
+  }
+  a0 <- suppressWarnings(as.numeric(s$A0))
+  if (anyNA(a0) || !all(a0 %in% c(0, 1))) {
+    bad <- unique(s$A0[!(a0 %in% c(0, 1)) | is.na(a0)])
+    stop("A0 must be coded 0/1 (control/experimental). Found value(s): ",
+         paste(utils::head(bad, 5), collapse = ", "),
+         ". Recode arms to 0 and 1 before calling as_va_switch_data().",
+         call. = FALSE)
+  }
+  for (v in c("W1", "W2")) {
+    if (anyNA(suppressWarnings(as.numeric(s[[v]])))) {
+      stop("Baseline covariate ", v, " contains missing or non-numeric values; ",
+           "impute or recode before analysis.", call. = FALSE)
+    }
+  }
+  for (v in c("T_time", "R_time", "C_time")) {
+    x <- suppressWarnings(as.numeric(s[[v]]))
+    if (anyNA(x)) {
+      stop(v, " contains NA. Code events that never occur as Inf ",
+           "(e.g. R_time = Inf for never-switchers), not NA.", call. = FALSE)
+    }
+    if (any(x < 0)) {
+      stop(v, " contains negative times; times must be measured from ",
+           "randomization (t = 0).", call. = FALSE)
+    }
+    s[[v]] <- x
+  }
+  if (any(s$T_time == 0)) {
+    stop("T_time contains 0 (failure at randomization); such subjects have no ",
+         "at-risk time and must be resolved upstream.", call. = FALSE)
+  }
+
+  ## ---- visit structure ------------------------------------------------------
+  visit_times <- as.numeric(visit_times)
+  if (length(visit_times) < 2L || is.unsorted(visit_times, strictly = TRUE) ||
+      visit_times[1] != 0) {
+    stop("visit_times must be strictly increasing and start at 0, e.g. ",
+         "c(0, 1, 3, 6, 12).", call. = FALSE)
+  }
+  if (!is.finite(tau) || tau <= 0 || tau > max(visit_times) + 1e-9) {
+    stop("tau must be positive and no larger than max(visit_times) = ",
+         max(visit_times), ".", call. = FALSE)
+  }
   visit_L <- as.matrix(visit_L)
+  storage.mode(visit_L) <- "double"
   if (nrow(visit_L) != nrow(s)) {
-    stop("visit_L must have one row per subject (", nrow(s), ").", call. = FALSE)
+    stop("visit_L must have one row per subject (", nrow(s), "); got ",
+         nrow(visit_L), ".", call. = FALSE)
   }
   if (ncol(visit_L) != length(visit_times)) {
     stop("visit_L must have one column per visit time (", length(visit_times),
-         ").", call. = FALSE)
+         "); got ", ncol(visit_L), ".", call. = FALSE)
   }
+  if (anyNA(visit_L[, 1])) {
+    stop("visit_L[, 1] (the baseline covariate measurement) contains NA; ",
+         "baseline L must be observed for every subject. Later columns may be ",
+         "NA after a subject leaves observation.", call. = FALSE)
+  }
+
   out <- make_ittpp_long(
-    W1 = as.numeric(s$W1), W2 = as.numeric(s$W2), A0 = as.integer(s$A0),
+    W1 = as.numeric(s$W1), W2 = as.numeric(s$W2), A0 = as.integer(a0),
     L_mat = visit_L,
-    T_time = as.numeric(s$T_time), R_time = as.numeric(s$R_time),
-    C_time = as.numeric(s$C_time),
+    T_time = s$T_time, R_time = s$R_time, C_time = s$C_time,
     visit_times = visit_times, tau = tau
   )
+  if (!nrow(out$person_interval)) {
+    stop("No at-risk person-time on the visit grid; check that event times and ",
+         "visit_times are on the same scale.", call. = FALSE)
+  }
   attr(out, "original_ids") <- s$id
   class(out) <- c("va_switch_data", class(out))
   out
