@@ -1,7 +1,7 @@
 # Simulate a visit-aligned trial
 
-Generates example scheduled-visit trial data for package examples and
-tests.
+This helper is intended for examples, tests, and teaching. It returns
+the same `va_data` object accepted by the estimators.
 
 ## Usage
 
@@ -17,12 +17,13 @@ simulate_va_trial(n = 1000, scenario = "S1", intervention = NULL, seed = NULL)
 
 - scenario:
 
-  Scenario name.
+  Scenario name. Currently `"S1"`, `"S3"`, `"S4c"`, and `"S6"` are
+  available.
 
 - intervention:
 
-  Optional static intervention, 0 or 1. Leave `NULL` for the observed
-  treatment mechanism.
+  Optional static intervention, `0` or `1`. Leave `NULL` to sample
+  treatment from the observed treatment mechanism.
 
 - seed:
 

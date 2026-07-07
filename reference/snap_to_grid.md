@@ -1,6 +1,10 @@
-# Build a snapped, discretized obs_data under a given ordering convention.
+# Snap a continuous-time trial to a discrete grid under an ordering convention
 
-Build a snapped, discretized obs_data under a given ordering convention.
+Converts a `va_switch_data` object to the discretized data a
+discrete-time LTMLE analyst would construct: every
+failure/switch/censoring time is snapped to its bin boundary, and
+same-bin co-occurrences are resolved by the chosen within-interval
+ordering convention.
 
 ## Usage
 
@@ -17,16 +21,28 @@ snap_to_grid(
 
 - obs_data:
 
-  original continuous-time obs_data (subject + person_interval)
+  A `va_switch_data` object (continuous-time; see
+  [`as_va_switch_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_switch_data.md)).
 
 - delta:
 
-  bin width (months)
+  Bin width, on the time scale of the data.
 
 - ordering:
 
-  "event_first" \| "switch_first" \| "drop_first"
+  Within-bin ordering convention: `"switch_first"` (switch resolved
+  before the outcome; a same-bin death is censored at switch),
+  `"event_first"` (the death is adjudicated first and counted), or
+  `"drop_first"` (dropout resolved before the outcome).
 
 - tau:
 
-  horizon
+  Analysis horizon.
+
+## Value
+
+A discretized `va_switch_data`-style object on the `delta` grid.
+
+## See also
+
+[`est_discrete_ltmle()`](https://blind-contours.github.io/vacttmle/reference/est_discrete_ltmle.md)

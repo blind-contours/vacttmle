@@ -103,7 +103,7 @@
 <h2 id="public-functions">Public functions<a class="anchor" aria-label="anchor" href="#public-functions"></a>
 </h2>
 <p><strong>Switching estimands (primary):</strong> - <code><a href="reference/va_ct_switch.html">va_ct_switch()</a></code> — ITT or per-protocol failure-free survival risk difference. - <code><a href="reference/as_va_switch_data.html">as_va_switch_data()</a></code> — build the analysis object from tidy trial data. - <code><a href="reference/simulate_va_switch_trial.html">simulate_va_switch_trial()</a></code> — example scheduled-visit trials (scenarios A0–A7). - <code><a href="reference/snap_to_grid.html">snap_to_grid()</a></code>, <code><a href="reference/est_discrete_ltmle.html">est_discrete_ltmle()</a></code> — the discrete-time LTMLE comparator (snapping + explicit within-interval ordering convention) used to reproduce the paper’s ordering-sensitivity experiment.</p>
-<p><strong>Composite endpoint (also provided; SEs pending re-audit):</strong> - <code><a href="reference/va_ct_tmle.html">va_ct_tmle()</a></code>, <code><a href="https://rdrr.io/pkg/vacttmle/man/va_ct_tmle.html" class="external-link">va_visit_tmle()</a></code>, <code><a href="https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html" class="external-link">va_ct_gcomp()</a></code> — composite-event-free survival <code>P(T^d &gt; tau, D^d &gt; tau)</code>; <code><a href="reference/as_va_data.html">as_va_data()</a></code>, <code><a href="reference/validate_va_data.html">validate_va_data()</a></code>, <code><a href="reference/simulate_va_trial.html">simulate_va_trial()</a></code>, <code><a href="reference/run_vacttmle_toy_checks.html">run_vacttmle_toy_checks()</a></code>. Note: the composite path has not yet been re-audited for the influence-function variance correction applied to the switching estimators (see <code>NEWS.md</code>); treat its standard errors as potentially conservative until then.</p>
+<p><strong>Composite endpoint (also provided; SEs pending re-audit):</strong> - <code><a href="reference/va_ct_tmle.html">va_ct_tmle()</a></code>, <code><a href="reference/va_visit_tmle.html">va_visit_tmle()</a></code>, <code><a href="reference/va_ct_gcomp.html">va_ct_gcomp()</a></code> — composite-event-free survival <code>P(T^d &gt; tau, D^d &gt; tau)</code>; <code><a href="reference/as_va_data.html">as_va_data()</a></code>, <code><a href="reference/validate_va_data.html">validate_va_data()</a></code>, <code><a href="reference/simulate_va_trial.html">simulate_va_trial()</a></code>, <code><a href="reference/run_vacttmle_toy_checks.html">run_vacttmle_toy_checks()</a></code>. Note: the composite path has not yet been re-audited for the influence-function variance correction applied to the switching estimators (see <code>NEWS.md</code>); treat its standard errors as potentially conservative until then.</p>
 </div>
 <div class="section level2">
 <h2 id="scope-of-this-release-010">Scope of this release (0.1.0)<a class="anchor" aria-label="anchor" href="#scope-of-this-release-010"></a>
@@ -113,6 +113,26 @@
 <li>Static regimes (assigned arm, with/without switching). The general switching-intensity intervention class of the paper (dynamic visit-gated and stochastic-scaled regimes) is prototype-validated but not yet in the public API.</li>
 <li>Piecewise-exponential working models; plug in flexible learners for nonparametric efficiency.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="help-stress-test-this-package">Help stress-test this package<a class="anchor" aria-label="anchor" href="#help-stress-test-this-package"></a>
+</h2>
+<p>This is a 0.1.0 release and we want it kicked hard. Especially useful:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Feed it your trial’s shape.</strong> Map your data through <code><a href="reference/as_va_switch_data.html">as_va_switch_data()</a></code> — unusual visit grids, heavy or one-sided switching, high censoring, small
+<ol start="14" style="list-style-type: lower-alpha">
+<li>If a data quirk produces a crash or a cryptic error instead of a clear message, that’s a bug: please open an issue.</li>
+</ol>
+</li>
+<li>
+<strong>Probe the positivity machinery.</strong> Simulate or supply data with near-deterministic switching and compare <code><a href="reference/va_ct_switch.html">va_ct_switch()</a></code> with and without <code>weight_trunc = "p95"</code>; check the per-visit weight diagnostics behave.</li>
+<li>
+<strong>Race it against what you use now.</strong> <code><a href="reference/est_discrete_ltmle.html">est_discrete_ltmle()</a></code> + <code><a href="reference/snap_to_grid.html">snap_to_grid()</a></code> let you reproduce a discrete-time analysis on the same data under different grid widths and within-interval ordering conventions; <code><a href="reference/simulate_va_switch_trial.html">simulate_va_switch_trial()</a></code> scenarios A0–A7 have known truths for benchmarking.</li>
+<li>
+<strong>Break the assumptions on purpose.</strong> Visit-sufficiency violations (scenario A6-style latent drivers), effects that depend on switch timing, competing risks — tell us where it degrades gracefully vs. misleads.</li>
+</ol>
+<p>Use the issue templates (convergence, data validation, estimand questions) and include <code><a href="reference/run_vacttmle_toy_checks.html">run_vacttmle_toy_checks()</a></code> output plus your <code><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>

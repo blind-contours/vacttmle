@@ -1,12 +1,16 @@
-# Visit-aligned continuous-time TMLE
+# vacttmle: Visit-Aligned Continuous-Time TMLE for Trials with Treatment Switching and Censoring
 
-Standalone implementation of visit-aligned continuous-time TMLE for
-scheduled visit trials with composite time-to-event endpoints. The
-current package targets composite-event-free survival, \\P(T^d \> \tau,
-D^d \> \tau)\\.
+Visit-aligned continuous-time targeted minimum loss estimation for
+scheduled-visit randomized trials in which treatment switching and loss
+to follow-up occur in continuous time while covariates are recorded only
+at scheduled visits. The primary interface is
+[`va_ct_switch()`](https://blind-contours.github.io/vacttmle/reference/va_ct_switch.md),
+which estimates the ICH E9(R1) treatment-policy (ITT) and hypothetical
+no-switching (per-protocol) failure-free survival contrasts from exact
+switch and dropout dates. Composite-endpoint estimators
+([`va_ct_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md))
+are also provided.
 
-## Details
+## Author
 
-The intercurrent event \\D\\ is part of the composite endpoint in this
-package version. Hypothetical no-\\D\\ or no-switch estimands are not
-exposed.
+**Maintainer**: David McCoy <david_mccoy@berkeley.edu>

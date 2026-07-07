@@ -1,7 +1,6 @@
-# Validate visit-aligned data
+# Validate a visit-aligned analysis object
 
-Checks required components, endpoint coding, and basic person-interval
-consistency for the composite endpoint.
+Validate a visit-aligned analysis object
 
 ## Usage
 
@@ -20,7 +19,7 @@ validate_va_data(obs_data, endpoint = "composite")
 
 - endpoint:
 
-  Endpoint type. Only `"composite"` is supported.
+  Endpoint type. Only `"composite"` is currently supported.
 
 ## Value
 

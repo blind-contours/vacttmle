@@ -183,9 +183,9 @@ fit_gcomp$result
 fit_visit$result
 ```
 
-[`va_ct_gcomp()`](https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html)
+[`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_gcomp.md)
 isolates targeting.
-[`va_visit_tmle()`](https://rdrr.io/pkg/vacttmle/man/va_ct_tmle.html)
+[`va_visit_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_visit_tmle.md)
 isolates the added value of continuous-time hazard targeting.
 
 ## What to report

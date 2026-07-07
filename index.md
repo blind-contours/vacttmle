@@ -83,9 +83,9 @@ ordering-sensitivity experiment.
 
 **Composite endpoint (also provided; SEs pending re-audit):** -
 [`va_ct_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md),
-[`va_visit_tmle()`](https://rdrr.io/pkg/vacttmle/man/va_ct_tmle.html),
-[`va_ct_gcomp()`](https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html) —
-composite-event-free survival `P(T^d > tau, D^d > tau)`;
+[`va_visit_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_visit_tmle.md),
+[`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_gcomp.md)
+— composite-event-free survival `P(T^d > tau, D^d > tau)`;
 [`as_va_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_data.md),
 [`validate_va_data()`](https://blind-contours.github.io/vacttmle/reference/validate_va_data.md),
 [`simulate_va_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_trial.md),
@@ -106,6 +106,39 @@ conservative until then.
   not yet in the public API.
 - Piecewise-exponential working models; plug in flexible learners for
   nonparametric efficiency.
+
+## Help stress-test this package
+
+This is a 0.1.0 release and we want it kicked hard. Especially useful:
+
+1.  **Feed it your trial’s shape.** Map your data through
+    [`as_va_switch_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_switch_data.md)
+    — unusual visit grids, heavy or one-sided switching, high censoring,
+    small
+    14. If a data quirk produces a crash or a cryptic error instead of a
+        clear message, that’s a bug: please open an issue.
+2.  **Probe the positivity machinery.** Simulate or supply data with
+    near-deterministic switching and compare
+    [`va_ct_switch()`](https://blind-contours.github.io/vacttmle/reference/va_ct_switch.md)
+    with and without `weight_trunc = "p95"`; check the per-visit weight
+    diagnostics behave.
+3.  **Race it against what you use now.**
+    [`est_discrete_ltmle()`](https://blind-contours.github.io/vacttmle/reference/est_discrete_ltmle.md) +
+    [`snap_to_grid()`](https://blind-contours.github.io/vacttmle/reference/snap_to_grid.md)
+    let you reproduce a discrete-time analysis on the same data under
+    different grid widths and within-interval ordering conventions;
+    [`simulate_va_switch_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_switch_trial.md)
+    scenarios A0–A7 have known truths for benchmarking.
+4.  **Break the assumptions on purpose.** Visit-sufficiency violations
+    (scenario A6-style latent drivers), effects that depend on switch
+    timing, competing risks — tell us where it degrades gracefully
+    vs. misleads.
+
+Use the issue templates (convergence, data validation, estimand
+questions) and include
+[`run_vacttmle_toy_checks()`](https://blind-contours.github.io/vacttmle/reference/run_vacttmle_toy_checks.md)
+output plus your
+[`sessionInfo()`](https://rdrr.io/r/utils/sessionInfo.html).
 
 ## Citation
 

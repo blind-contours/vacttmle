@@ -1,7 +1,6 @@
-# Run package toy checks
+# Run lightweight package toy checks
 
-Runs lightweight analytic validation checks for the composite survival
-target.
+Run lightweight package toy checks
 
 ## Usage
 
@@ -21,4 +20,4 @@ run_vacttmle_toy_checks(n = 5000, seed = 7001)
 
 ## Value
 
-A data.table with estimates, analytic truths, errors, and pass flags.
+A data.table with toy-check estimates and pass/fail flags.
