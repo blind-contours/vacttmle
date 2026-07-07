@@ -1,186 +1,114 @@
 # vacttmle
 
-[![R-CMD-check](https://github.com/blind-contours/vacttmle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/blind-contours/vacttmle/actions/workflows/R-CMD-check.yaml)
+**Visit-aligned continuous-time TMLE** for randomized trials in which
+treatment switching (crossover) and loss to follow-up happen in
+*continuous time* — dated to the day — while covariates are recorded
+only at *scheduled visits*.
 
-`vacttmle` is a standalone R package for visit-aligned continuous-time
-TMLE in scheduled-visit trials with a composite time-to-event endpoint.
+`vacttmle` estimates failure-free survival and risk differences under
+the two ICH E9(R1) strategies for treatment switching:
 
-The current package targets
+- **ITT / treatment-policy** — switching left as it naturally occurs,
+  censoring removed: `P(T^{a, no-C} > tau)`.
+- **Per-protocol / hypothetical no-switching** — switching *and*
+  censoring removed: `P(T^{a, no-R, no-C} > tau)`.
 
-``` text
-P(T^d > tau, D^d > tau)
-```
-
-and the composite risk difference
-
-``` text
-{1 - P(T^d1 > tau, D^d1 > tau)} -
-{1 - P(T^d0 > tau, D^d0 > tau)}.
-```
-
-`D` is part of the composite endpoint. It is not treated as censoring in
-this package version.
+It uses the exact switch and dropout dates (no discretization, no
+arbitrary within-interval ordering of events), is doubly robust between
+the switching-and-censoring mechanism and the outcome-regression
+sequence, and provides influence-function inference, per-visit
+positivity diagnostics, and percentile weight control for heavy
+switching. Methods: McCoy (2026).
 
 ## Installation
 
-Install the development version from GitHub:
-
 ``` r
-install.packages("remotes")
+# install.packages("remotes")
 remotes::install_github("blind-contours/vacttmle")
 ```
 
-## Start here for trial analyses
+Depends only on `data.table`, `survival`, and base R.
 
-If you are testing `vacttmle` on a scheduled-visit trial, start with:
-
-- [`vignette("trialist-quickstart", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/trialist-quickstart.md):
-  data layout, first fit, output interpretation, and standard comparison
-  checks.
-- [`vignette("convergence-diagnostics", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/convergence-diagnostics.md):
-  how to inspect component-wise EIF diagnostics, weights, and
-  convergence.
-- [`vignette("trialist-testing-protocol", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/trialist-testing-protocol.md):
-  a short conservative-to-flexible testing path and current limitations.
-
-Before using your own data, run the installed smoke test:
-
-``` r
-library(vacttmle)
-source(system.file("examples", "trialist-smoke-test.R", package = "vacttmle"))
-```
-
-The smoke test prints a deterministic example analysis and verifies that
-the package, toy checks, estimator, and diagnostics are working.
-
-## Data layout
-
-The current package expects one subject table and one person-interval
-table. Visits are scheduled, for example months `0, 1, 3, 6, 12`.
-
-Required subject-level columns:
-
-| Column            | Meaning                                                     |
-|-------------------|-------------------------------------------------------------|
-| `id`              | Unique participant id                                       |
-| `W1`, `W2`        | Baseline covariates in the current package interface        |
-| `A0`              | Baseline treatment, coded `0` or `1`                        |
-| `T_time`          | Failure/event time; use `Inf` if no event before `tau`      |
-| `D_time`          | Intercurrent-event time; use `Inf` if no event before `tau` |
-| `composite_time`  | `pmin(T_time, D_time, tau)`                                 |
-| `composite_event` | `1` if `T` or `D` occurs by `tau`, otherwise `0`            |
-
-Required person-interval columns:
-
-| Column                    | Meaning                                                 |
-|---------------------------|---------------------------------------------------------|
-| `id`, `k`                 | Participant id and interval index, starting at `k = 0`  |
-| `t_start`, `t_end`, `ell` | Interval start, stop, and length                        |
-| `W1`, `W2`, `A0`, `A_k`   | Baseline covariates and interval treatment              |
-| `L_k`, `L_next`           | Visit covariate at interval start and next visit        |
-| `time_at_risk`            | Observed at-risk time inside the interval               |
-| `event_T`, `event_D`      | Cause-specific interval indicators                      |
-| `event_comp`              | `event_T OR event_D`                                    |
-| `event_time`              | Elapsed event time within interval, or `NA` if no event |
-| `Y_end`                   | `1` if composite-event-free at the next visit           |
-
-For baseline-randomized trials with deterministic post-baseline
-continuation, the default `g0 = 0.5` and no additional visit-level
-treatment probabilities are needed. For stochastic post-baseline
-treatment/deviation processes, include `follow_d0`, `follow_d1`,
-`g_cum_observed`, `g_cum_d0`, and `g_cum_d1` in the person-interval
-table so cumulative treatment-history weights are known.
-
-## Minimal example with output
+## Quick start (treatment switching)
 
 ``` r
 library(vacttmle)
 
-dat <- simulate_va_trial(n = 500, scenario = "S1", seed = 1)
+# Simulated scheduled-visit trial with crossover + informative censoring
+dat <- simulate_va_switch_trial(n = 1000, scenario = "A2", seed = 1)
 
-fit <- va_ct_tmle(dat, M = 20, B = 10, max_iter = 5, seed = 2)
-fit
+# Per-protocol (hypothetical no-switching) 12-month risk difference
+va_ct_switch(dat, estimand = "PP")
+
+# Treatment-policy (ITT) from the same data
+va_ct_switch(dat, estimand = "ITT")
 ```
 
-Expected output:
+### Using your own trial data
 
-``` text
-Visit-aligned continuous-time estimator
-Endpoint: composite
-Estimator: ct_tmle
-Risk(d0): 0.2875
-Risk(d1): 0.1556
-Risk difference: -0.1319
-SE: 0.0347
-95% CI: [-0.1999, -0.0638]
-Converged: yes
-```
-
-Inspect diagnostics:
+Provide one row per subject with the exact event times, plus a
+subject-by-visit matrix of the visit covariate:
 
 ``` r
-fit$diagnostics
+subject_df <- data.frame(
+  id, A0,             # randomized arm (0/1)
+  W1, W2,             # baseline covariates
+  T_time,             # failure time
+  R_time,             # switch time  (Inf if never switched)
+  C_time              # dropout time (Inf if never censored)
+)
+visit_L <- matrix(...) # n x length(visit_times): covariate L at each visit
+
+dat <- as_va_switch_data(subject_df, visit_L,
+                         visit_times = c(0, 1, 3, 6, 12), tau = 12)
+
+# Heavy switching? Control the cumulative weight with percentile truncation:
+va_ct_switch(dat, estimand = "PP", weight_trunc = "p95")
 ```
-
-Example diagnostics:
-
-| converged | n_outer_iterations | max_abs_eif_T | max_abs_eif_D | max_abs_eif_Q | max_abs_total_eif | max_weight_d0 | max_weight_d1 | ess_d0 | ess_d1 |
-|-----------|-------------------:|--------------:|--------------:|--------------:|------------------:|--------------:|--------------:|-------:|-------:|
-| TRUE      |                  1 |      0.000370 |      0.000424 |      0.001349 |          0.001094 |             2 |             2 |    952 |    971 |
 
 ## Public functions
 
-- [`va_ct_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
-  estimates the composite risk difference with VA-CT-TMLE.
-- [`va_visit_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
-  runs the visit-node-only ablation.
-- [`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
-  runs visit-aligned continuous-time g-computation without targeting.
-- [`as_va_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_data.md)
-  adapts subject and person-interval tables to the package format.
-- [`validate_va_data()`](https://blind-contours.github.io/vacttmle/reference/validate_va_data.md)
-  checks endpoint coding and required fields.
-- [`simulate_va_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_trial.md)
-  generates example scheduled-visit trial data.
-- [`run_vacttmle_toy_checks()`](https://blind-contours.github.io/vacttmle/reference/run_vacttmle_toy_checks.md)
-  runs lightweight analytic checks.
+**Switching estimands (primary):** -
+[`va_ct_switch()`](https://blind-contours.github.io/vacttmle/reference/va_ct_switch.md)
+— ITT or per-protocol failure-free survival risk difference. -
+[`as_va_switch_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_switch_data.md)
+— build the analysis object from tidy trial data. -
+[`simulate_va_switch_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_switch_trial.md)
+— example scheduled-visit trials (scenarios A0–A7). -
+[`snap_to_grid()`](https://blind-contours.github.io/vacttmle/reference/snap_to_grid.md),
+[`est_discrete_ltmle()`](https://blind-contours.github.io/vacttmle/reference/est_discrete_ltmle.md)
+— the discrete-time LTMLE comparator (snapping + explicit
+within-interval ordering convention) used to reproduce the paper’s
+ordering-sensitivity experiment.
 
-## Toy validation
+**Composite endpoint (also provided; SEs pending re-audit):** -
+[`va_ct_tmle()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md),
+[`va_visit_tmle()`](https://rdrr.io/pkg/vacttmle/man/va_ct_tmle.html),
+[`va_ct_gcomp()`](https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html) —
+composite-event-free survival `P(T^d > tau, D^d > tau)`;
+[`as_va_data()`](https://blind-contours.github.io/vacttmle/reference/as_va_data.md),
+[`validate_va_data()`](https://blind-contours.github.io/vacttmle/reference/validate_va_data.md),
+[`simulate_va_trial()`](https://blind-contours.github.io/vacttmle/reference/simulate_va_trial.md),
+[`run_vacttmle_toy_checks()`](https://blind-contours.github.io/vacttmle/reference/run_vacttmle_toy_checks.md).
+Note: the composite path has not yet been re-audited for the
+influence-function variance correction applied to the switching
+estimators (see `NEWS.md`); treat its standard errors as potentially
+conservative until then.
 
-``` r
-run_vacttmle_toy_checks(n = 3000, seed = 7001)
-```
+## Scope of this release (0.1.0)
 
-Expected output:
+- Baseline randomization with known `g0`; two baseline covariates (`W1`,
+  `W2`) and a single scheduled-visit covariate `L`. Map your covariates
+  onto these.
+- Static regimes (assigned arm, with/without switching). The general
+  switching-intensity intervention class of the paper (dynamic
+  visit-gated and stochastic-scaled regimes) is prototype-validated but
+  not yet in the public API.
+- Piecewise-exponential working models; plug in flexible learners for
+  nonparametric efficiency.
 
-| check             | estimate |    truth | abs_error | passed |
-|-------------------|---------:|---------:|----------:|:------:|
-| one_interval      | 0.618935 | 0.618783 |  0.000152 |  TRUE  |
-| two_interval      | 0.682722 | 0.697676 |  0.014954 |  TRUE  |
-| composite_hazards | 0.485428 | 0.486752 |  0.001324 |  TRUE  |
+## Citation
 
-## Current scope
-
-Supported now:
-
-- scheduled-visit data with exact event timing inside intervals
-- composite endpoint where `D` is part of the endpoint
-- binary static regimes `d0 = 0` and `d1 = 1`
-- baseline-randomized trials with deterministic continuation
-- known stochastic visit-level treatment probabilities when supplied in
-  the person-interval table
-- risk, risk difference, EIF standard error, Wald CI, convergence
-  diagnostics, and weight diagnostics
-
-Not currently supported:
-
-- hypothetical no-switch/no-intercurrent-event estimands
-- treating `D` as censoring
-- arbitrary dynamic regimes
-- multi-arm or continuous treatment
-- recurrent events
-- informative censoring before `tau`
-- clustered-trial variance corrections
-
-Hypothetical no-switch/no-intercurrent-event estimands require a
-different estimator and are intentionally not exposed here.
+McCoy, D. (2026). *Doubly robust, exact-time adjustment for treatment
+switching in randomized trials: a visit-aligned continuous-time TMLE.*
+Preprint.

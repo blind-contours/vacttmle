@@ -1,5 +1,10 @@
 # Articles
 
+### Treatment switching (ITT / per-protocol)
+
+- [ITT and per-protocol estimands under treatment
+  switching](https://blind-contours.github.io/vacttmle/articles/treatment-switching.md):
+
 ### Trialist workflow
 
 - [Trialist

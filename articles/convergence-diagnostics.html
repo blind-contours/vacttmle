@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">vacttmle</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,10 +31,9 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/blind-contours/vacttmle/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
-      </ul>
+<ul class="navbar-nav"></ul>
 </div>
 
 
@@ -50,7 +49,7 @@
       <h1>Convergence diagnostics</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/blind-contours/vacttmle/blob/main/vignettes/convergence-diagnostics.Rmd" class="external-link"><code>vignettes/convergence-diagnostics.Rmd</code></a></small>
+
       <div class="d-none name"><code>convergence-diagnostics.Rmd</code></div>
     </div>
 
@@ -176,7 +175,7 @@ strategy is chosen.</p>
 endpoint.</li>
 <li>Run <code><a href="../reference/run_vacttmle_toy_checks.html">run_vacttmle_toy_checks()</a></code> to verify the installed
 estimator.</li>
-<li>Start with <code><a href="../reference/va_ct_tmle.html">va_ct_gcomp()</a></code> to check initial nuisance
+<li>Start with <code><a href="https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html" class="external-link">va_ct_gcomp()</a></code> to check initial nuisance
 behavior.</li>
 <li>Use <code>update_method = "adaptive"</code> for the TMLE fit.</li>
 <li>Increase <code>max_iter</code> only if component means are

@@ -56,7 +56,3 @@ For trial data, use
 to adapt subject-level and person-interval tables, then call
 [`validate_va_data()`](https://blind-contours.github.io/vacttmle/reference/validate_va_data.md)
 before estimation.
-
-See
-[`vignette("trialist-quickstart", package = "vacttmle")`](https://blind-contours.github.io/vacttmle/articles/trialist-quickstart.md)
-for the full trialist workflow and data-layout checklist.

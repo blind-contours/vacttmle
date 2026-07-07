@@ -4,9 +4,10 @@ pkgdown_sha: ~
 articles:
   composite-risk-difference: composite-risk-difference.html
   convergence-diagnostics: convergence-diagnostics.html
+  treatment-switching: treatment-switching.html
   trialist-quickstart: trialist-quickstart.html
   trialist-testing-protocol: trialist-testing-protocol.html
-last_built: 2026-06-02T18:38Z
+last_built: 2026-07-07T02:04Z
 urls:
   reference: https://blind-contours.github.io/vacttmle/reference
   article: https://blind-contours.github.io/vacttmle/articles

@@ -73,7 +73,7 @@ Recommended debugging ladder:
     [`run_vacttmle_toy_checks()`](https://blind-contours.github.io/vacttmle/reference/run_vacttmle_toy_checks.md)
     to verify the installed estimator.
 4.  Start with
-    [`va_ct_gcomp()`](https://blind-contours.github.io/vacttmle/reference/va_ct_tmle.md)
+    [`va_ct_gcomp()`](https://rdrr.io/pkg/vacttmle/man/va_ct_gcomp.html)
     to check initial nuisance behavior.
 5.  Use `update_method = "adaptive"` for the TMLE fit.
 6.  Increase `max_iter` only if component means are improving.

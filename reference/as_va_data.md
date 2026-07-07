@@ -1,10 +1,7 @@
 # Build a visit-aligned analysis object
 
 Converts subject-level and person-interval tables into the analysis
-object used by the package estimators. The person-interval table must
-include start-of-visit and next-visit covariates (\`L_k\`, \`L_next\`)
-plus exact elapsed event time within the interval (\`event_time\`) so
-the continuous-time hazard targeting step can be computed.
+object used by the package estimators.
 
 ## Usage
 

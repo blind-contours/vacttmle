@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">vacttmle</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,10 +31,9 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
-<ul class="navbar-nav">
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/blind-contours/vacttmle/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
-      </ul>
+<ul class="navbar-nav"></ul>
 </div>
 
 
@@ -50,14 +49,14 @@
       <h1>Composite Risk Difference with VA-CT-TMLE</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/blind-contours/vacttmle/blob/main/vignettes/composite-risk-difference.Rmd" class="external-link"><code>vignettes/composite-risk-difference.Rmd</code></a></small>
+
       <div class="d-none name"><code>composite-risk-difference.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://blind-contours.github.io/vacttmle">vacttmle</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">vacttmle</span><span class="op">)</span></span></code></pre></div>
 <p>This package estimates a visit-aligned continuous-time TMLE for the
 composite survival target</p>
 <pre class="text"><code>P(T^d &gt; tau, D^d &gt; tau).</code></pre>
@@ -92,9 +91,6 @@ summaries.</p>
 <p>For trial data, use <code><a href="../reference/as_va_data.html">as_va_data()</a></code> to adapt subject-level
 and person-interval tables, then call <code><a href="../reference/validate_va_data.html">validate_va_data()</a></code>
 before estimation.</p>
-<p>See
-<code><a href="../articles/trialist-quickstart.html">vignette("trialist-quickstart", package = "vacttmle")</a></code> for
-the full trialist workflow and data-layout checklist.</p>
   </main>
 </div>
 
