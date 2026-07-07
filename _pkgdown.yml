@@ -6,6 +6,9 @@ navbar:
     left: [intro, articles, reference, news]
     right: [github]
 articles:
+  - title: Treatment switching (ITT / per-protocol)
+    contents:
+      - treatment-switching
   - title: Trialist workflow
     contents:
       - trialist-quickstart
@@ -16,7 +19,16 @@ reference:
   - title: Package
     contents:
       - vacttmle-package
-  - title: Estimators
+  - title: Treatment-switching estimands (primary)
+    contents:
+      - va_ct_switch
+      - as_va_switch_data
+      - simulate_va_switch_trial
+  - title: Discrete-LTMLE comparator
+    contents:
+      - snap_to_grid
+      - est_discrete_ltmle
+  - title: Composite-endpoint estimators
     contents:
       - va_ct_tmle
       - va_visit_tmle

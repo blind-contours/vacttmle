@@ -77,10 +77,13 @@ va_ct_switch(dat, estimand = "PP", weight_trunc = "p95")
   (snapping + explicit within-interval ordering convention) used to reproduce
   the paper's ordering-sensitivity experiment.
 
-**Composite endpoint (also provided):**
+**Composite endpoint (also provided; SEs pending re-audit):**
 - `va_ct_tmle()`, `va_visit_tmle()`, `va_ct_gcomp()` — composite-event-free
   survival `P(T^d > tau, D^d > tau)`; `as_va_data()`, `validate_va_data()`,
-  `simulate_va_trial()`, `run_vacttmle_toy_checks()`.
+  `simulate_va_trial()`, `run_vacttmle_toy_checks()`. Note: the composite path
+  has not yet been re-audited for the influence-function variance correction
+  applied to the switching estimators (see `NEWS.md`); treat its standard
+  errors as potentially conservative until then.
 
 ## Scope of this release (0.1.0)
 
